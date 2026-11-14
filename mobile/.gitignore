@@ -1,0 +1,17 @@
+# Everything below is made by the build (npm run android:add / ios:add) or is a secret, so it never goes into git.
+node_modules/
+android/
+ios/
+capacitor.config.json
+www/nullchat-server.js
+
+# Your signing keys and Firebase / Apple files: keep these out of git. In GitHub Actions they go in as encrypted secrets.
+google-services.json
+*.jks
+*.keystore
+*.p8
+*.p12
+*.mobileprovision
+*.apk
+*.aab
+*.ipa

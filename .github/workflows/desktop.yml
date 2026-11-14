@@ -1,0 +1,112 @@
+# Builds the NullChat desktop installers on GitHub's servers — including macOS, which can only be
+# built on a Mac. Run it from the "Actions" tab (Build desktop apps → Run workflow), or push a tag
+# like v1.0.0. Download the installers from the finished run's "Artifacts" (or the Release for tags).
+#
+# Optional (removes the macOS "unidentified developer" warning): add these repository secrets from an
+# Apple Developer account ($99/yr): MAC_CERT_P12_BASE64, MAC_CERT_PASSWORD, APPLE_ID,
+# APPLE_APP_SPECIFIC_PASSWORD, APPLE_TEAM_ID. Without them the Mac app is ad-hoc signed.
+name: Build desktop apps
+
+on:
+  workflow_dispatch:
+    inputs:
+      targets:
+        description: Which apps to build
+        type: choice
+        default: all
+        options: [all, mac-linux, mac]
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  # Which computers to build on: all three, or only the ones asked for ("Build Mac App.bat" asks for Mac and Linux,
+  # since the Windows installer is built on your own PC and Mac minutes are the expensive ones).
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.pick.outputs.matrix }}
+    steps:
+      - id: pick
+        shell: bash
+        env:
+          TARGETS: ${{ inputs.targets }}
+        run: |
+          WIN='{"os":"windows-latest","script":"desktop:win"}'
+          MAC='{"os":"macos-latest","script":"desktop:mac"}'
+          LINUX='{"os":"ubuntu-latest","script":"desktop:linux"}'
+          case "$TARGETS" in
+            mac) LIST="$MAC" ;;
+            mac-linux) LIST="$MAC,$LINUX" ;;
+            *) LIST="$WIN,$MAC,$LINUX" ;;
+          esac
+          echo "matrix={\"include\":[$LIST]}" >> "$GITHUB_OUTPUT"
+  build:
+    needs: plan
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      # Signing is used only when the secrets exist; otherwise builds are unsigned / ad-hoc signed.
+      # The signing settings are handed to the build ONLY when they have a value: an empty CSC_LINK is not "no
+      # certificate" to the builder, it is "a certificate file with no name", and the Mac build stops on it.
+      - name: Signing settings (only when the secrets exist)
+        shell: bash
+        env:
+          P12: ${{ secrets.MAC_CERT_P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
+          ID: ${{ secrets.APPLE_ID }}
+          ID_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          TEAM: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          if [ -n "$P12" ]; then
+            echo "CSC_LINK=$P12" >> "$GITHUB_ENV"
+            echo "CSC_KEY_PASSWORD=$P12_PASSWORD" >> "$GITHUB_ENV"
+            echo "Signing with the certificate from the repository secrets."
+          else
+            echo "CSC_IDENTITY_AUTO_DISCOVERY=false" >> "$GITHUB_ENV"
+            echo "No certificate: the Mac app is ad-hoc signed."
+          fi
+          if [ -n "$ID" ] && [ -n "$ID_PASSWORD" ] && [ -n "$TEAM" ]; then
+            echo "APPLE_ID=$ID" >> "$GITHUB_ENV"
+            echo "APPLE_APP_SPECIFIC_PASSWORD=$ID_PASSWORD" >> "$GITHUB_ENV"
+            echo "APPLE_TEAM_ID=$TEAM" >> "$GITHUB_ENV"
+          fi
+      - name: Build
+        run: npm run ${{ matrix.script }}
+        env:
+          # Set a repository variable NULLCHAT_SERVER_URL (Settings → Secrets and variables → Actions →
+          # Variables) so the app opens your server automatically and updates itself from it.
+          NULLCHAT_SERVER_URL: ${{ vars.NULLCHAT_SERVER_URL }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: NullChat-${{ runner.os }}
+          path: |
+            desktop/release/*.exe
+            desktop/release/*.exe.blockmap
+            desktop/release/latest*.yml
+            desktop/release/*.dmg
+            desktop/release/*-mac-*.zip
+            desktop/release/*.AppImage
+            desktop/release/*.deb
+          if-no-files-found: error
+      - name: Attach to release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            desktop/release/*.exe
+            desktop/release/*.exe.blockmap
+            desktop/release/latest*.yml
+            desktop/release/*.dmg
+            desktop/release/*-mac-*.zip
+            desktop/release/*.AppImage
+            desktop/release/*.deb

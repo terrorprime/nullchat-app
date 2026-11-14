@@ -1,0 +1,8 @@
+# Replace with your domain. Caddy obtains and renews the HTTPS certificate automatically.
+chat.example.com {
+	encode zstd gzip
+	request_body {
+		max_size 30MB
+	}
+	reverse_proxy nullchat:3001
+}

@@ -1,0 +1,23 @@
+node_modules/
+client/dist/
+data/
+.env
+*.log
+.DS_Store
+Thumbs.db
+
+# Big build output and installer files. GitHub refuses files over 100 MB (the Windows installer is about 101 MB),
+# and the installers are built on GitHub anyway. Installers live in downloads/ only on your own computer.
+desktop/node_modules/
+desktop/release/
+desktop/bundle/
+downloads/*
+!downloads/README.txt
+
+# Added by scripts/github-build.cjs: private or huge files that stay on this computer.
+.env.*
+!.env.example
+*.pem
+*.p12
+*.keystore
+*.jks

@@ -1,0 +1,26 @@
+{
+  "name": "nullchat-mobile",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Builds the NullChat Android and iPhone apps: your NullChat website inside Capacitor's native shell, plus phone notifications.",
+  "type": "module",
+  "scripts": {
+    "configure": "node scripts/configure.mjs",
+    "android:add": "node scripts/configure.mjs && cap add android && node scripts/patch-android.mjs && cap sync android",
+    "android:sync": "node scripts/configure.mjs && node scripts/patch-android.mjs && cap sync android",
+    "android:open": "cap open android",
+    "ios:add": "node scripts/configure.mjs && cap add ios --packagemanager SPM && node scripts/patch-ios.mjs && cap sync ios",
+    "ios:sync": "node scripts/configure.mjs && node scripts/patch-ios.mjs && cap sync ios",
+    "ios:open": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/cli": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
+    "@capacitor/ios": "^8.0.0",
+    "@capacitor/push-notifications": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "name": "nullchat",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "NullChat \u2014 a real-time chat, voice and video platform",
+  "workspaces": [
+    "server",
+    "client"
+  ],
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "setup": "node scripts/setup.js",
+    "dev": "concurrently -k -n server,client -c magenta,cyan \"npm run dev -w server\" \"npm run dev -w client\"",
+    "dev:https": "concurrently -k -n server,client -c magenta,cyan \"npm run dev -w server\" \"npm run dev:https -w client\"",
+    "build": "npm run build -w client",
+    "start": "npm start -w server",
+    "seed": "npm run seed -w server",
+    "reset-db": "node scripts/reset-db.js",
+    "desktop": "npm run build && npm --prefix desktop install && npm --prefix desktop start",
+    "desktop:win": "npm run build && npm --prefix desktop install && npm --prefix desktop run dist:win",
+    "desktop:mac": "npm run build && npm --prefix desktop install && npm --prefix desktop run dist:mac",
+    "desktop:linux": "npm run build && npm --prefix desktop install && npm --prefix desktop run dist:linux"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

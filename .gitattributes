@@ -1,0 +1,4 @@
+# Keep the Mac/Linux scripts on Unix line endings and the Windows ones on Windows endings, whatever system checks them out.
+*.sh text eol=lf
+*.command text eol=lf
+*.bat text eol=crlf

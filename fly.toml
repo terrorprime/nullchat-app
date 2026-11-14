@@ -1,0 +1,48 @@
+# Fly.io configuration for NullChat.
+# Deploy with "Deploy to Fly.io.bat" (or: fly deploy --ha=false).
+# The app name and PUBLIC_URL below are rewritten by that script, so you rarely need to edit this file.
+app = "nullchat"
+primary_region = "ord"   # Chicago. Other examples: iad (Virginia), lax (Los Angeles), ams (Amsterdam), lhr (London)
+kill_signal = "SIGTERM"
+kill_timeout = 10
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  PORT = "3001"
+  HOST = "0.0.0.0"
+  DATA_DIR = "/data"
+  TRUST_PROXY = "true"
+  MAX_UPLOAD_MB = "150"
+  PUBLIC_URL = "https://nullchat.fly.dev"
+  # APP_SECRET is stored as a Fly secret (the deploy script creates it), never in this file.
+  # Email, GIFs and voice relay are also set as secrets, see SETUP-FLY.md.
+
+# Persistent disk for the database and uploads. Without it, every deploy wipes all data.
+[[mounts]]
+  source = "nullchat_data"
+  destination = "/data"
+
+[http_service]
+  internal_port = 3001
+  force_https = true
+  # Always on: chat keeps people's presence and live connections in memory, so the server
+  # should not sleep. To save money you can switch to auto_stop_machines = "stop" and
+  # min_machines_running = 0, but then the first visitor waits a few seconds and everyone
+  # shows as offline after each sleep.
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    grace_period = "15s"
+    interval = "30s"
+    method = "GET"
+    path = "/api/health"
+    timeout = "5s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

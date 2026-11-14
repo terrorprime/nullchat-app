@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=NullChat
+Comment=Chat, voice and video
+Exec=@EXEC@
+Icon=nullchat
+Terminal=false
+Categories=Network;InstantMessaging;Chat;
+Keywords=chat;voice;video;nullchat;
+StartupNotify=true

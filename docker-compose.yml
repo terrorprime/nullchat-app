@@ -1,0 +1,45 @@
+# Production deployment: NullChat + Caddy (automatic HTTPS via Let's Encrypt).
+# 1. Point your domain's DNS (A record) at this server.
+# 2. Edit deploy/Caddyfile and replace chat.example.com with your domain.
+# 3. Create .env (npm run setup, or copy .env.example) and set NODE_ENV=production,
+#    PUBLIC_URL=https://your-domain, TRUST_PROXY=true and a long random APP_SECRET.
+# 4. docker compose up -d --build
+services:
+  nullchat:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      DATA_DIR: /data
+      TRUST_PROXY: "true"
+    volumes:
+      - nullchat-data:/data
+    expose:
+      - "3001"
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - nullchat
+
+  # Optional TURN server for reliable voice/video across strict NATs and mobile networks.
+  # Uncomment, then set TURN_URLS=turn:your-domain:3478 plus TURN_USERNAME / TURN_CREDENTIAL in .env.
+  # coturn:
+  #   image: coturn/coturn:4.6
+  #   restart: unless-stopped
+  #   network_mode: host
+  #   command: ["-n", "--listening-port=3478", "--fingerprint", "--lt-cred-mech", "--user=nullchat:CHANGE_ME", "--realm=nullchat", "--min-port=49160", "--max-port=49200"]
+
+volumes:
+  nullchat-data:
+  caddy-data:
+  caddy-config:

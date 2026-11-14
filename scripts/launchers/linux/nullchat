@@ -1,0 +1,31 @@
+#!/bin/sh
+# Opens NullChat in its own window, using Chrome, Chromium, Edge, Brave or Vivaldi if one is installed.
+# The server address is read from (first one found):
+#   $NULLCHAT_URL,  ~/.local/share/nullchat/server-url,  /usr/share/nullchat/server-url
+url="${NULLCHAT_URL:-}"
+if [ -z "$url" ]; then
+  for f in "${XDG_DATA_HOME:-$HOME/.local/share}/nullchat/server-url" /usr/share/nullchat/server-url; do
+    if [ -r "$f" ]; then
+      url="$(tr -d ' \t\r\n' < "$f")"
+      [ -n "$url" ] && break
+    fi
+  done
+fi
+case "$url" in
+  http://*|https://*) ;;
+  *) echo "NullChat: no server address found. Put it in /usr/share/nullchat/server-url or set NULLCHAT_URL." >&2; exit 1 ;;
+esac
+
+for browser in google-chrome google-chrome-stable chromium chromium-browser microsoft-edge microsoft-edge-stable brave-browser brave vivaldi vivaldi-stable; do
+  if command -v "$browser" >/dev/null 2>&1; then
+    exec "$browser" --app="$url" "$@"
+  fi
+done
+
+# No browser that can open an app window: open the normal browser instead and say why.
+if command -v notify-send >/dev/null 2>&1; then
+  notify-send "NullChat" "Install Chrome, Chromium, Edge or Brave to get NullChat in its own window. Opening it in your browser for now." || true
+else
+  echo "NullChat: install Chrome, Chromium, Edge or Brave to get NullChat in its own window." >&2
+fi
+exec xdg-open "$url"

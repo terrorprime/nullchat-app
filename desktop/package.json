@@ -1,0 +1,163 @@
+{
+  "name": "nullchat-desktop",
+  "productName": "NullChat",
+  "version": "1.5.3",
+  "description": "NullChat desktop app \u2014 chat, voice and video",
+  "author": {
+    "name": "NullChat",
+    "email": "noreply@nullchat.invalid"
+  },
+  "homepage": "https://nullchat.fly.dev",
+  "license": "MIT",
+  "private": true,
+  "main": "main.cjs",
+  "scripts": {
+    "prepare-bundle": "node scripts/prepare.cjs",
+    "start": "npm run prepare-bundle && electron .",
+    "dist": "npm run prepare-bundle && electron-builder --publish never",
+    "dist:win": "npm run prepare-bundle && electron-builder --win --x64 --publish never",
+    "dist:mac": "npm run prepare-bundle && electron-builder --mac --arm64 --x64 --publish never",
+    "dist:linux": "npm run prepare-bundle && electron-builder --linux --publish never",
+    "postinstall": "electron-builder install-app-deps || echo \"(native module rebuild skipped)\""
+  },
+  "dependencies": {
+    "nodemailer": "^7.0.6",
+    "ws": "^8.18.3",
+    "zod": "^3.25.76",
+    "electron-updater": "^6.6.2"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^12.2.0"
+  },
+  "devDependencies": {
+    "electron": "^37.2.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "app.nullchat.desktop",
+    "productName": "NullChat",
+    "copyright": "NullChat",
+    "asar": false,
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "screenshare.cjs",
+      "autostart.cjs",
+      "launcher.html",
+      "launcher.js",
+      "splash.html",
+      "splash.js",
+      "app-config.json",
+      "build/icon.png",
+      "build/badges/**",
+      "build/trayTemplate*.png",
+      "bundle/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "artifactName": "NullChatSetup.exe"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "runAfterFinish": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "shortcutName": "NullChat",
+      "uninstallDisplayName": "NullChat",
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "NullChatSetup.exe"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "category": "public.app-category.social-networking",
+      "artifactName": "NullChat-${version}-mac-${arch}.${ext}",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "minimumSystemVersion": "11.0",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "NullChat uses your microphone for voice chat and calls.",
+        "NSCameraUsageDescription": "NullChat uses your camera for video calls.",
+        "NSScreenCaptureUsageDescription": "NullChat uses screen recording so you can share your screen.",
+        "NSLocalNetworkUsageDescription": "NullChat connects to NullChat servers on your local network."
+      }
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "build/icon.png",
+      "category": "Network",
+      "maintainer": "NullChat <noreply@nullchat.invalid>",
+      "synopsis": "Chat, voice and video",
+      "artifactName": "NullChat-${version}-linux-${arch}.${ext}"
+    },
+    "dmg": {
+      "title": "NullChat ${version}",
+      "contents": [
+        {
+          "x": 150,
+          "y": 190,
+          "type": "file"
+        },
+        {
+          "x": 450,
+          "y": 190,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "window": {
+        "width": 600,
+        "height": 400
+      }
+    },
+    "afterPack": "scripts/after-pack.cjs",
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://updates.invalid/downloads"
+      }
+    ],
+    "protocols": [
+      {
+        "name": "NullChat",
+        "schemes": [
+          "nullchat"
+        ]
+      }
+    ]
+  }
+}

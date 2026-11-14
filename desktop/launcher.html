@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:" />
+<title>NullChat</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: Inter, 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; color: #d8dbe0; display: flex; align-items: center; justify-content: center; padding: 24px;
+    background: radial-gradient(900px 480px at 50% -12%, rgba(194,255,61,.13), transparent 65%), radial-gradient(circle at 1px 1px, rgba(255,255,255,.06) 1px, transparent 0) 0 0 / 26px 26px, #040405;
+  }
+  .wrap { width: 100%; max-width: 760px; }
+  .brand { display: flex; align-items: center; justify-content: center; gap: 12px; font-size: 28px; font-weight: 800; letter-spacing: -.04em; color: #f5f6f8; margin-bottom: 6px; }
+  .brand img { width: 44px; height: 44px; border-radius: 11px; }
+  .sub { text-align: center; color: #8b919c; margin: 0 0 28px; font-family: ui-monospace, 'Cascadia Code', Consolas, monospace; font-size: 13px; letter-spacing: .04em; }
+  .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .card { background: #0d0e11; border: 1px solid rgba(255,255,255,.12); border-radius: 18px; padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+  .card h2 { margin: 0; font-size: 19px; color: #f3f4f6; }
+  .card p { margin: 0; color: #8e95a3; font-size: 14px; line-height: 1.45; flex: 1; }
+  .icon { width: 48px; height: 48px; border-radius: 12px; display: grid; place-items: center; background: rgba(194,255,61,.12); color: #c2ff3d; font-size: 24px; }
+  button { font: inherit; border: 0; border-radius: 10px; min-height: 42px; padding: 0 16px; font-weight: 600; cursor: pointer; background: #c2ff3d; color: #0b0d05; }
+  button:hover { background: #d4ff7a; }
+  button:disabled { opacity: .6; cursor: wait; }
+  button.secondary { background: transparent; color: #f5f6f8; border: 1px solid rgba(255,255,255,.15); }
+  input { font: inherit; width: 100%; background: #14161a; border: 1px solid rgba(255,255,255,.08); border-radius: 10px; padding: 10px 12px; color: #d8dbe0; outline: none; }
+  input:focus { border-color: rgba(194,255,61,.7); box-shadow: 0 0 0 3px rgba(194,255,61,.16); }
+  .error { display: none; background: rgba(242,63,67,.12); border: 1px solid rgba(242,63,67,.4); border-radius: 8px; padding: 10px 12px; margin-bottom: 16px; font-size: 14px; }
+  .hint { font-size: 12px; color: #6a7080; }
+  .card[hidden], .cards[hidden] { display: none; }
+  .card.recommended { margin-bottom: 16px; border-color: rgba(194,255,61,.45); background: linear-gradient(180deg, rgba(194,255,61,.07), #0d0e11 60%); }
+  .card.recommended p b { color: #f3f4f6; }
+  .badge { align-self: flex-start; font-family: ui-monospace, 'Cascadia Code', Consolas, monospace; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #c2ff3d; border: 1px solid rgba(194,255,61,.4); border-radius: 999px; padding: 2px 9px; }
+  @media (max-width: 640px) { .cards { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand"><img src="build/icon.png" alt="" /> NullChat</div>
+    <p class="sub" id="sub" hidden>How would you like to use NullChat?</p>
+    <div class="error" id="error"></div>
+    <div class="card" id="locked" hidden style="max-width: 460px; margin: 0 auto;">
+      <div class="icon">⚠</div>
+      <h2>Can’t connect</h2>
+      <p id="locked-msg">NullChat couldn’t reach its server. Check your internet connection, then try again.</p>
+      <button id="retry">Try again</button>
+    </div>
+    <div class="card recommended" id="baked" hidden>
+      <span class="badge">Recommended</span>
+      <h2>Use your NullChat server</h2>
+      <p>Sign in with the account you already made in your browser. Your accounts, servers and messages live on <b id="baked-host"></b>, so this is the one to pick if you want the same account here.</p>
+      <button id="baked-connect">Connect</button>
+    </div>
+    <div class="cards" hidden>
+      <div class="card">
+        <div class="icon">🖥</div>
+        <h2>Host on this computer</h2>
+        <p>Run your own NullChat server right here. Your accounts and messages are saved on this PC, and friends on your network can join from their browser or the NullChat app. <b>It starts with no accounts, so accounts you made on an online server won’t exist here.</b></p>
+        <button id="host">Start my server</button>
+      </div>
+      <div class="card">
+        <div class="icon">🌐</div>
+        <h2>Join a server</h2>
+        <p>Connect to a NullChat server someone else is running — on the internet or on your local network.</p>
+        <input id="url" placeholder="chat.example.com or 192.168.1.23:3001" autocomplete="url" />
+        <button id="connect" class="secondary">Connect</button>
+        <span class="hint">You can switch servers any time from File → Switch Server.</span>
+      </div>
+    </div>
+  </div>
+  <script src="launcher.js"></script>
+</body>
+</html>
